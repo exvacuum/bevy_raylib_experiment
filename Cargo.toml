@@ -1,0 +1,9 @@
+[package]
+name = "bevy_raylib_experiment"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+raylib = "5.0"
+bevy_ecs = "0.14"
+bevy_derive = "0.14"
