@@ -2,10 +2,12 @@ use std::mem;
 
 use bevy_derive::{Deref, DerefMut};
 use bevy_ecs::prelude::*;
+use bullet::BulletPlugin;
 use player::PlayerPlugin;
 use raylib::prelude::*;
 
 mod player;
+mod bullet;
 
 pub mod schedule {
     use bevy_ecs::schedule::ScheduleLabel;
@@ -51,6 +53,7 @@ fn main() {
     });
 
     PlayerPlugin::build(&mut world);
+    BulletPlugin::build(&mut world);
 
     world.run_schedule(Startup);
     while !world
@@ -62,12 +65,10 @@ fn main() {
 
         let mut raylib_context = world.remove_resource::<RaylibContext>().unwrap();
         // SAFETY: Uhh I think it's ok...
-        unsafe {
-            let d = RaylibDrawContext(mem::transmute(
-                raylib_context.begin_drawing(&thread.clone()),
-            ));
-            world.insert_resource(d);
-        }
+        let d = RaylibDrawContext(unsafe {
+            mem::transmute(raylib_context.begin_drawing(&thread.clone()))
+        });
+        world.insert_resource(d);
         world.run_schedule(Draw);
         world.remove_resource::<RaylibDrawContext>();
         world.insert_resource(raylib_context);
@@ -80,9 +81,9 @@ pub struct RaylibContext(pub RaylibHandle);
 #[derive(Resource, Deref, DerefMut)]
 pub struct RaylibDrawContext(pub RaylibDrawHandle<'static>);
 
-#[derive(Component, Default, Debug, Deref, DerefMut)]
+#[derive(Component, Default, Debug, Deref, DerefMut, Clone)]
 struct Transform(pub math::Transform);
 
 fn clear_background(mut d: ResMut<RaylibDrawContext>) {
-    d.clear_background(Color::WHITE);
+    d.clear_background(Color::BLACK);
 }
